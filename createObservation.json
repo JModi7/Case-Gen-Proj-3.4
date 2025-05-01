@@ -1,21 +1,21 @@
 {
-  "resourceType": "Observation",
-  "code": {
-    "coding": [
-      {
-        "system": "http://foo",
-        "code": "12345"
-      }
-    ]
-  },
-  "subject": {
-    "reference": "Patient/202"
-  },
-  "effectiveDateTime": "2023-04-19T09:34:50+01:00",
-  "valueQuantity": {
-    "value": 123,
-    "unit": "kg",
-    "system": "http://bar",
-    "code": "kg"
-  }
+    "resourceType": "Observation",
+    "code": {
+        "coding": [
+            {
+                "system": "http://foo",
+                "code": "12345"
+            }
+        ]
+    },
+    "subject": {
+        "reference": "Patient/202"
+    },
+    "effectiveDateTime": "2023-04-19T09:34:50+01:00",
+    "valueQuantity": {
+        "value": 123,
+        "unit": "kg",
+        "system": "http://bar",
+        "code": "kg"
+    }
 }

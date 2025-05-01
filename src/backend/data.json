@@ -5,13 +5,13 @@
     "encounter_date": "2025-04-28",
     "encounter_type": "emergency",
     "conditions": [
-        "Chest Pain",
         "Hypertension",
-        "Hyperlipidemia"
+        "Hyperlipidemia",
+        "Acute coronary syndrome"
     ],
     "medications": [
-        "Aspirin",
-        "Nitroglycerin",
+        "Aspirin 325mg",
+        "Nitroglycerin 0.4mg",
         "Morphine"
     ],
     "vitals": {
@@ -25,19 +25,23 @@
     "allergies": [],
     "procedures_performed": [
         "12-lead EKG",
-        "IV access",
-        "Cardiac monitoring"
+        "Cardiac monitor",
+        "IV access"
     ],
     "tests_ordered": [
+        "Cardiac enzymes",
         "Troponin I",
-        "CBC",
-        "BMP",
+        "Complete blood count",
+        "Basic metabolic panel",
         "Chest X-ray"
     ],
     "care_plan": [
         "Consult cardiology",
-        "Repeat troponins in 3 and 6 hours",
+        "Possible cardiac catheterization",
+        "Heparin drip",
         "Continuous telemetry monitoring",
+        "Repeat troponins",
+        "Follow up with primary care provider and cardiology",
         "Lifestyle modifications"
     ]
 }

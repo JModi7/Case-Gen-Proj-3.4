@@ -9,6 +9,21 @@ import authToken
 import dotenv
 import os
 
+# Import FHIR client libraries
+from fhirclient.models import (
+    patient,
+    condition,
+    observation,
+    medicationrequest,
+    allergyintolerance,
+)
+from fhirclient.models.fhirdate import FHIRDate
+from fhirclient.models.codeableconcept import CodeableConcept
+from fhirclient.models.coding import Coding
+from fhirclient.models.quantity import Quantity
+from fhirclient.models.fhirreference import FHIRReference
+from fhirclient.models.annotation import Annotation
+
 dotenv.load_dotenv()
 
 app = Flask(__name__)
@@ -55,30 +70,25 @@ def call_openai_to_extract(text):
 
         Format your answer strictly in this JSON structure:
         {{
-        "patient_name": "John Smith",
-        "dob": "1970-01-18",
-        "gender": "male",
-        "encounter_date": "2025-04-28",
-        "encounter_type": "emergency",
-        "conditions": ["Chest Pain", "Hypertension", "Hyperlipidemia"],
-        "medications": ["Aspirin", "Nitroglycerin", "Morphine"],
+        "patient_name": "",
+        "dob": "",
+        "gender": "",
+        "encounter_date": "",
+        "encounter_type": "",
+        "conditions": [],
+        "medications": [],
         "vitals": {{
-            "systolic": 148,
-            "diastolic": 92,
-            "heart_rate": 102,
-            "respiratory_rate": 20,
-            "temperature": 98.4,
-            "oxygen_saturation": 96
+            "systolic": '',
+            "diastolic": '',
+            "heart_rate": '',
+            "respiratory_rate": '',
+            "temperature": '',
+            "oxygen_saturation": ''
         }},
         "allergies": [],
-        "procedures_performed": ["12-lead EKG", "IV access", "Cardiac monitoring"],
-        "tests_ordered": ["Troponin I", "CBC", "BMP", "Chest X-ray"],
-        "care_plan": [
-            "Consult cardiology",
-            "Repeat troponins in 3 and 6 hours",
-            "Continuous telemetry monitoring",
-            "Lifestyle modifications"
-        ]
+        "procedures_performed": [],
+        "tests_ordered": [],
+        "care_plan": []
         }}
 
         Here is the clinical note:
@@ -100,157 +110,227 @@ def call_openai_to_extract(text):
     )
 
 
-def create_condition_json(condition_name, patient_id):
-    """Create FHIR Condition JSON"""
-    return {
-        "resourceType": "Condition",
-        "clinicalStatus": {
-            "coding": [
-                {
-                    "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                    "code": "Active",
-                    "display": "Active",
-                }
-            ]
-        },
-        "verificationStatus": {
-            "coding": [
-                {
-                    "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-                    "code": "confirmed",
-                    "display": "Confirmed",
-                }
-            ]
-        },
-        "category": [
-            {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/condition-category",
-                        "code": "problem-list-item",
-                        "display": "Problem List Item",
-                    }
-                ]
-            }
-        ],
-        "code": {
-            "coding": [
-                {"system": "http://snomed.info/sct", "display": "N/A"},
-            ],
-            "text": condition_name.title(),
-        },
-        "subject": {"reference": f"Patient/{patient_id}"},
-        "recordedDate": datetime.now().strftime("%Y-%m-%d"),
-    }
+def create_condition_resource(condition_name, patient_id):
+    """Create FHIR Condition resource using fhirclient model"""
+    # Create a new Condition resource
+    cond_resource = condition.Condition()
+
+    # Set resource type
+    cond_resource.resource_type = "Condition"
+
+    # Set clinical status
+    clinical_status = CodeableConcept()
+    clinical_coding = Coding()
+    clinical_coding.system = "http://terminology.hl7.org/CodeSystem/condition-clinical"
+    clinical_coding.code = "active"
+    clinical_coding.display = "Active"
+    clinical_status.coding = [clinical_coding]
+    cond_resource.clinicalStatus = clinical_status
+
+    # Set verification status
+    verification_status = CodeableConcept()
+    verification_coding = Coding()
+    verification_coding.system = (
+        "http://terminology.hl7.org/CodeSystem/condition-ver-status"
+    )
+    verification_coding.code = "confirmed"
+    verification_coding.display = "Confirmed"
+    verification_status.coding = [verification_coding]
+    cond_resource.verificationStatus = verification_status
+
+    # Set category
+    category = CodeableConcept()
+    category_coding = Coding()
+    category_coding.system = "http://terminology.hl7.org/CodeSystem/condition-category"
+    category_coding.code = "problem-list-item"
+    category_coding.display = "Problem List Item"
+    category.coding = [category_coding]
+    cond_resource.category = [category]
+
+    # Set condition code
+    code = CodeableConcept()
+    code_coding = Coding()
+    code_coding.system = "http://snomed.info/sct"
+    code_coding.display = "N/A"
+    code.coding = [code_coding]
+    code.text = condition_name.title()
+    cond_resource.code = code
+
+    # Set subject reference
+    subject = FHIRReference()
+    subject.reference = f"Patient/{patient_id}"
+    cond_resource.subject = subject
+
+    # Set recorded date
+    cond_resource.recordedDate = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+
+    return cond_resource.as_json()
 
 
-def create_medication_request_json(extracted, patient_id):
-    """Create FHIR MedicationRequest JSON"""
-    return {
-        "resourceType": "MedicationRequest",
-        "status": "active",
-        "intent": "order",
-        "medicationCodeableConcept": {
-            "coding": [
-                {
-                    "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-                    "display": med,
-                }
-                for med in extracted["medications"]
-            ],
-            "text": ", ".join(extracted["medications"]),
-        },
-        "subject": {"reference": f"Patient/{patient_id}"},
-        "authoredOn": datetime.now().strftime("%Y-%m-%d"),
-        "dosageInstruction": [{"text": "As clinically indicated."}],
-    }
+def create_medication_request_resource(extracted, patient_id):
+    """Create FHIR MedicationRequest resource using fhirclient model"""
+    med_resource = medicationrequest.MedicationRequest()
+
+    # Set resource type
+    med_resource.resource_type = "MedicationRequest"
+
+    # Set status
+    med_resource.status = "active"
+
+    # Set intent
+    med_resource.intent = "order"
+
+    # Set medication concept
+    med_concept = CodeableConcept()
+    med_concept.text = ", ".join(extracted["medications"])
+
+    med_codings = []
+    for med in extracted["medications"]:
+        med_coding = Coding()
+        med_coding.system = "http://www.nlm.nih.gov/research/umls/rxnorm"
+        med_coding.display = med
+        med_codings.append(med_coding)
+
+    med_concept.coding = med_codings
+    med_resource.medicationCodeableConcept = med_concept
+
+    # Set subject reference
+    subject = FHIRReference()
+    subject.reference = f"Patient/{patient_id}"
+    med_resource.subject = subject
+
+    # Set authored date
+    med_resource.authoredOn = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+
+    # Set dosage instruction
+    dosage = medicationrequest.MedicationRequestDosageInstruction()
+    dosage.text = "As clinically indicated."
+    med_resource.dosageInstruction = [dosage]
+
+    return med_resource.as_json()
 
 
-def create_observation_json(vitals, patient_id):
-    """Create FHIR Observation JSON"""
-    data = {
-        "resourceType": "Observation",
-        "id": "heart-rate",
-        "meta": {"profile": ["http://hl7.org/fhir/StructureDefinition/vitalsigns"]},
-        "text": {
-            "status": "generated",
-            "div": "<div xmlns=\"http://www.w3.org/1999/xhtml\"><p><b>Generated Narrative with Details</b></p><p><b>id</b>: heart-rate</p><p><b>meta</b>: </p><p><b>status</b>: final</p><p><b>category</b>: Vital Signs <span>(Details : {http://terminology.hl7.org/CodeSystem/observation-category code 'vital-signs' = 'Vital Signs', given as 'Vital Signs'})</span></p><p><b>code</b>: Heart rate <span>(Details : {LOINC code '8867-4' = 'Heart rate', given as 'Heart rate'})</span></p><p><b>subject</b>: <a>Patient/example</a></p><p><b>effective</b>: 02/07/1999</p><p><b>value</b>: 44 beats/minute<span> (Details: UCUM code /min = '/min')</span></p></div>",
-        },
-        "status": "final",
-        "category": [
-            {
-                "coding": [
-                    {
-                        "system": "http://terminology.hl7.org/CodeSystem/observation-category",
-                        "code": "vital-signs",
-                        "display": "Vital Signs",
-                    }
-                ],
-                "text": "Vital Signs",
-            }
-        ],
-        "code": {
-            "coding": [
-                {
-                    "system": "http://loinc.org",
-                    "code": "8867-4",
-                    "display": "Heart rate",
-                }
-            ],
-            "text": "Heart rate",
-        },
-        "subject": {"reference": "Patient/example"},
-        "effectiveDateTime": "1999-07-02",
-        "valueQuantity": {
-            "value": vitals["heart_rate"],
-            "unit": "beats/minute",
-            "system": "http://unitsofmeasure.org",
-            "code": "/min",
-        },
-    }
+def create_observation_resource(vitals, patient_id):
+    """Create FHIR Observation resource using fhirclient model"""
+    # Create heart rate observation as an example
+    obs_resource = observation.Observation()
 
-    obs_status, obs_resp = post_to_fhir(data, "Observation")
-    if obs_status != 201:
-        print(f"Failed to post observation: {obs_resp}")
+    # Set resource type and ID
+    obs_resource.resource_type = "Observation"
+    obs_resource.id = "heart-rate"
+
+    # Set status
+    obs_resource.status = "final"
+
+    # Set category
+    category = CodeableConcept()
+    category_coding = Coding()
+    category_coding.system = (
+        "http://terminology.hl7.org/CodeSystem/observation-category"
+    )
+    category_coding.code = "vital-signs"
+    category_coding.display = "Vital Signs"
+    category.coding = [category_coding]
+    category.text = "Vital Signs"
+    obs_resource.category = [category]
+
+    # Set code
+    code = CodeableConcept()
+    code_coding = Coding()
+    code_coding.system = "http://loinc.org"
+    code_coding.code = "8867-4"
+    code_coding.display = "Heart rate"
+    code.coding = [code_coding]
+    code.text = "Heart rate"
+    obs_resource.code = code
+
+    # Set subject reference
+    subject = FHIRReference()
+    subject.reference = f"Patient/{patient_id}"
+    obs_resource.subject = subject
+
+    # Set effective date time
+    obs_resource.effectiveDateTime = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+
+    # Set value quantity
+    value_quantity = Quantity()
+    value_quantity.value = vitals["heart_rate"]
+    value_quantity.unit = "beats/minute"
+    value_quantity.system = "http://unitsofmeasure.org"
+    value_quantity.code = "/min"
+    obs_resource.valueQuantity = value_quantity
+
+    return obs_resource.as_json()
 
 
-def create_allergy_intolerance_json(extracted, patient_id):
-    """Create FHIR AllergyIntolerance JSON"""
+def create_allergy_intolerance_resource(extracted, patient_id):
+    """Create FHIR AllergyIntolerance resource using fhirclient model"""
     allergies = extracted.get("allergies", [])
-    return {
-        "resourceType": "AllergyIntolerance",
-        "clinicalStatus": {
-            "coding": [
-                {
-                    "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
-                    "code": "active" if allergies else "inactive",
-                }
-            ]
-        },
-        "verificationStatus": {
-            "coding": [
-                {
-                    "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
-                    "code": "confirmed" if allergies else "unconfirmed",
-                }
-            ]
-        },
-        "type": "allergy",
-        "category": ["medication"],
-        "criticality": "low",
-        "patient": {"reference": f"Patient/{patient_id}"},
-        "recordedDate": datetime.now().strftime("%Y-%m-%d"),
-        "reaction": (
-            [{"manifestation": [{"text": allergy}]} for allergy in allergies]
-            if allergies
-            else []
-        ),
-        "note": [{"text": "No known allergies."}] if not allergies else [],
-    }
+
+    allergy_resource = allergyintolerance.AllergyIntolerance()
+
+    # Set resource type
+    allergy_resource.resource_type = "AllergyIntolerance"
+
+    # Set clinical status
+    clinical_status = CodeableConcept()
+    clinical_coding = Coding()
+    clinical_coding.system = (
+        "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"
+    )
+    clinical_coding.code = "active" if allergies else "inactive"
+    clinical_status.coding = [clinical_coding]
+    allergy_resource.clinicalStatus = clinical_status
+
+    # Set verification status
+    verification_status = CodeableConcept()
+    verification_coding = Coding()
+    verification_coding.system = (
+        "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"
+    )
+    verification_coding.code = "confirmed" if allergies else "unconfirmed"
+    verification_status.coding = [verification_coding]
+    allergy_resource.verificationStatus = verification_status
+
+    # Set type
+    allergy_resource.type = "allergy"
+
+    # Set category
+    allergy_resource.category = ["medication"]
+
+    # Set criticality
+    allergy_resource.criticality = "low"
+
+    # Set patient reference
+    patient_ref = FHIRReference()
+    patient_ref.reference = f"Patient/{patient_id}"
+    allergy_resource.patient = patient_ref
+
+    # Set recorded date
+    allergy_resource.recordedDate = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+
+    # Set reactions or notes
+    if allergies:
+        reactions = []
+        for allergy in allergies:
+            reaction = allergyintolerance.AllergyIntoleranceReaction()
+            manifestation = CodeableConcept()
+            manifestation.text = allergy
+            reaction.manifestation = [manifestation]
+            reactions.append(reaction)
+        allergy_resource.reaction = reactions
+    else:
+        note = Annotation()
+        note.text = "No known allergies."
+        allergy_resource.note = [note]
+
+    return allergy_resource.as_json()
 
 
 def create_patient_json(user_data):
     """Create Patient registration JSON from user data"""
+    # Since this function seems to create a custom JSON for an external API,
+    # not directly related to FHIR client, we'll keep it as is
     patient_json = {
         "username": user_data["username"],
         "email": user_data["email"],
@@ -282,19 +362,15 @@ def post_to_fhir(resource_json, resource_type):
 
 
 def create_patient(resource_json):
-
+    """POST patient registration to registration service"""
     url = os.getenv("REGISTRATION_URL")  # Don't add anything, already correct
-    # headers = {"Content-Type": "application/fhir+json;charset=UTF-8",
-    #            "Authorization": f"Bearer {auth_token}"}
-
     headers = authToken.lof_service_request_headers()
     response = requests.post(url, headers=headers, json=resource_json)
-    # print(response)
     return response.status_code, response.text
 
 
 def get_patient_id(email):
-
+    """Get patient ID by email"""
     headers = {"Accept": "application/fhir+json"}
     response = requests.get(os.getenv("GET_PATIENT_URL") + str(email), headers=headers)
     if response.status_code == 200:
@@ -313,51 +389,59 @@ def get_patient_id(email):
 # === API ENDPOINT ===
 @app.route("/process_note", methods=["POST"])
 def process_note():
-
+    """Process clinical note and create FHIR resources"""
     file = request.files["pdf"]
     user_data = request.form.get("user_data")
     user_data = json.loads(user_data)
 
+    # Create patient registration JSON
     registration_json = create_patient_json(user_data)
 
+    # Extract text from PDF and analyze with OpenAI
     extracted_text = extract_text_from_pdf(file)
     extracted = call_openai_to_extract(extracted_text)
 
+    # Register patient
     reg_status, reg_resp = create_patient(registration_json)
 
+    # Get patient ID
     patient_id = get_patient_id(user_data["email"])
 
-    for key in extracted["conditions"]:
-        condition_json = create_condition_json(key, patient_id)
-        print(condition_json)
-        cond_status, cond_resp = post_to_fhir(condition_json, "Condition")
+    # Create and post all conditions
+    conditions_responses = []
+    for condition_name in extracted["conditions"]:
+        condition_resource = create_condition_resource(condition_name, patient_id)
+        cond_status, cond_resp = post_to_fhir(condition_resource, "Condition")
+        conditions_responses.append({"status": cond_status, "response": cond_resp})
         if cond_status != 201:
             print(f"Failed to post condition: {cond_resp}")
 
-    # for key in extracted["medications"]:
-    #     medication_json = create_medication_request_json(key, patient_id)
-    #     print(medication_json)
-    #     med_status, med_resp = post_to_fhir(medication_json, "MedicationRequest")
-    #     if med_status != 201:
-    #         print(f"Failed to post medication request: {med_resp}")
+    # Create and post medication request
+    medication_resource = create_medication_request_resource(extracted, patient_id)
+    med_status, med_resp = post_to_fhir(medication_resource, "MedicationRequest")
+    if med_status != 201:
+        print(f"Failed to post medication request: {med_resp}")
 
-    # for key in extracted["allergies"]:
-    #     allergy_json = create_allergy_intolerance_json(extracted, patient_id)
+    # Create and post observation for vitals
+    observation_resource = create_observation_resource(extracted["vitals"], patient_id)
+    obs_status, obs_resp = post_to_fhir(observation_resource, "Observation")
+    if obs_status != 201:
+        print(f"Failed to post observation: {obs_resp}")
 
-    # print(condition_json,medication_json,observation_json,allergy_json)
+    # Create and post allergy intolerance
+    allergy_resource = create_allergy_intolerance_resource(extracted, patient_id)
+    allergy_status, allergy_resp = post_to_fhir(allergy_resource, "AllergyIntolerance")
+    if allergy_status != 201:
+        print(f"Failed to post allergy intolerance: {allergy_resp}")
 
-    # Post to FHIR Server
-    create_observation_json(extracted["vitals"], patient_id)
-    # med_status, med_resp = post_to_fhir(medication_json, "MedicationRequest")
-    # allergy_status, allergy_resp = post_to_fhir(allergy_json, "AllergyIntolerance")
-
+    # Return response with all statuses
     return jsonify(
         {
             "registration": {"status": reg_status, "response": reg_resp},
-            "Condition": {"status": cond_status, "response": cond_resp},
-            # "MedicationRequest": {"status": med_status, "response": med_resp},
-            # "Observation": {"status": obs_status, "response": obs_resp},
-            # "AllergyIntolerance": {"status": allergy_status, "response": allergy_resp},
+            "conditions": conditions_responses,
+            "medication": {"status": med_status, "response": med_resp},
+            "observation": {"status": obs_status, "response": obs_resp},
+            "allergyIntolerance": {"status": allergy_status, "response": allergy_resp},
         }
     )
 

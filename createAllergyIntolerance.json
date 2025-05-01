@@ -1,55 +1,55 @@
 {
-  "resourceType": "AllergyIntolerance",
-  "clinicalStatus": {
-    "coding": [
-      {
-        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
-        "code": "active"
-      }
-    ]
-  },
-  "verificationStatus": {
-    "coding": [
-      {
-        "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
-        "code": "unconfirmed"
-      }
-    ]
-  },
-  "type": "allergy",
-  "category": [
-    "medication"
-  ],
-  "criticality": "low",
-  "code": {
-    "coding": [
-      {
-        "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
-        "code": "2670",
-        "display": "codeine"
-      }
-    ],
-    "text": "codeine"
-  },
-  "patient": {
-    "reference": "Patient/202"
-  },
-  "recordedDate": "2021-01-05T15:37:42-08:00",
-  "reaction": [
-    {
-      "manifestation": [
-        {
-          "coding": [
+    "resourceType": "AllergyIntolerance",
+    "clinicalStatus": {
+        "coding": [
             {
-              "system": "http://snomed.info/sct",
-              "code": "41291007",
-              "display": "Angioedema"
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical",
+                "code": "active"
             }
-          ],
-          "text": "Angioedema"
+        ]
+    },
+    "verificationStatus": {
+        "coding": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification",
+                "code": "unconfirmed"
+            }
+        ]
+    },
+    "type": "allergy",
+    "category": [
+        "medication"
+    ],
+    "criticality": "low",
+    "code": {
+        "coding": [
+            {
+                "system": "http://www.nlm.nih.gov/research/umls/rxnorm",
+                "code": "2670",
+                "display": "codeine"
+            }
+        ],
+        "text": "codeine"
+    },
+    "patient": {
+        "reference": "Patient/202"
+    },
+    "recordedDate": "2021-01-05T15:37:42-08:00",
+    "reaction": [
+        {
+            "manifestation": [
+                {
+                    "coding": [
+                        {
+                            "system": "http://snomed.info/sct",
+                            "code": "41291007",
+                            "display": "Angioedema"
+                        }
+                    ],
+                    "text": "Angioedema"
+                }
+            ],
+            "severity": "severe"
         }
-      ],
-      "severity": "severe"
-    }
-  ]
+    ]
 }

@@ -1,0 +1,8 @@
+streamlit
+flask
+requests
+flask_cors
+pdfplumber
+openai
+fhirclient
+dotenv

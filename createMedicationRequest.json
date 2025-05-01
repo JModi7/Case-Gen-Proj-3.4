@@ -1,0 +1,187 @@
+{
+  "resourceType": "MedicationRequest",
+  "status": "active",
+  "intent": "order",
+  "medicationReference": {
+    "reference": "Medication/108"
+  },
+  "subject": {
+    "reference": "Patient/202"
+  },
+  "authoredOn": "2025-01-10",
+  "reasonCode": [
+    {
+      "coding": [
+        {
+          "system": "http://snomed.info/sct",
+          "display": "{'text': 'high blood pressure', 'imo_response': {'lexical_code': '58222', 'lexical_title': 'High blood pressure', 'default_lexical_code': '86491', 'default_lexical_title': 'Hypertension', 'metadata': {'mappings': {'icd9cm': {'codes': [{'code': '401.9', 'title': 'Unspecified essential hypertension', 'map_type': 'Preferred primary'}]}, 'icd10cm': {'codes': [{'code': 'I10', 'title': 'Essential (primary) hypertension', 'map_type': 'Preferred primary', 'relationship_type': 'Narrower than', 'code_metadata': {'ccsr': [{'ccsr_category': 'CIR007', 'ccsr_description': 'Essential hypertension'}], 'hcc': []}}]}, 'snomedInternational': {'codes': [{'code': '38341003', 'title': 'Hypertensive disorder', 'map_type': 'Preferred primary', 'mesh_code': 'D006973', 'relationship_type': 'Same as'}]}}, 'flags': {'is_icd10cm_refinable': True}}, 'score': 1, 'certainty': 'Exact'}}"
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "display": "{'text': 'hormone imbalance', 'imo_response': {'lexical_code': '3541541', 'lexical_title': 'Hormone imbalance', 'default_lexical_code': '800608', 'default_lexical_title': 'Disorder of endocrine system', 'metadata': {'mappings': {'icd9cm': {'codes': [{'code': '259.9', 'title': 'Unspecified endocrine disorder', 'map_type': 'Preferred primary'}]}, 'icd10cm': {'codes': [{'code': 'E34.9', 'title': 'Endocrine disorder, unspecified', 'map_type': 'Preferred primary', 'relationship_type': 'Same as', 'code_metadata': {'ccsr': [{'ccsr_category': 'END015', 'ccsr_description': 'Other specified and unspecified endocrine disorders'}], 'hcc': []}}]}, 'snomedInternational': {'codes': [{'code': '362969004', 'title': 'Disorder of endocrine system', 'map_type': 'Preferred primary', 'mesh_code': 'D004700', 'relationship_type': 'Same as'}]}}, 'flags': {'is_icd10cm_refinable': False}}, 'score': 1, 'certainty': 'Exact'}}"
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "display": "{'text': 'prevent kidney stones', 'imo_response': {'lexical_code': '11898', 'lexical_title': 'Kidney stone', 'default_lexical_code': '47623', 'default_lexical_title': 'Calculus of kidney', 'metadata': {'mappings': {'icd9cm': {'codes': [{'code': '592.0', 'title': 'Calculus of kidney', 'map_type': 'Preferred primary'}]}, 'icd10cm': {'codes': [{'code': 'N20.0', 'title': 'Calculus of kidney', 'map_type': 'Preferred primary', 'relationship_type': 'Same as', 'code_metadata': {'ccsr': [{'ccsr_category': 'GEN005', 'ccsr_description': 'Calculus of urinary tract'}], 'hcc': []}}]}, 'snomedInternational': {'codes': [{'code': '95570007', 'title': 'Kidney stone', 'map_type': 'Preferred primary', 'mesh_code': 'D053040', 'relationship_type': 'Same as'}]}}, 'flags': {'is_icd10cm_refinable': False}}, 'score': 0.811, 'certainty': 'Interpreted'}}"
+        },
+        {
+          "system": "http://snomed.info/sct",
+          "display": "{'text': 'swelling', 'imo_response': {'lexical_code': '27791', 'lexical_title': 'Swelling', 'default_lexical_code': '27791', 'default_lexical_title': 'Swelling', 'metadata': {'mappings': {'icd9cm': {'codes': [{'code': '782.3', 'title': 'Edema', 'map_type': 'Preferred primary'}]}, 'icd10cm': {'codes': [{'code': 'R60.9', 'title': 'Edema, unspecified', 'map_type': 'Preferred primary', 'relationship_type': 'Narrower than', 'code_metadata': {'ccsr': [{'ccsr_category': 'SYM016', 'ccsr_description': 'Other general signs and symptoms'}], 'hcc': []}}]}, 'snomedInternational': {'codes': [{'code': '65124004', 'title': 'Swelling', 'map_type': 'Preferred primary', 'mesh_code': '', 'relationship_type': 'Same as'}]}}, 'flags': {'is_icd10cm_refinable': False}}, 'score': 1, 'certainty': 'Exact'}}"
+        }
+      ]
+    }
+  ],
+  "note": [
+    {
+      "text": "Tell your doctor and pharmacist if you ever had an allergic reaction to a medicine."
+    },
+    {
+      "text": "Do not use the medication any more than instructed."
+    },
+    {
+      "text": "This medicine may cause dizziness or fainting.  Do not stand or sit up quickly."
+    },
+    {
+      "text": "Your ability to stay alert or to react quickly may be impaired by this medicine. Do not drive or operate machinery until you know how this medicine will affect you."
+    },
+    {
+      "text": "Please check with your doctor before drinking alcohol while on this medicine."
+    },
+    {
+      "text": "This medicine passes into breast milk. Ask your doctor before breastfeeding."
+    },
+    {
+      "text": "During pregnancy, this medicine should be used only when clearly needed. Talk to your doctor about the risks and benefits."
+    },
+    {
+      "text": "Do not share this medicine with anyone who has not been prescribed this medicine."
+    }
+  ],
+  "dosageInstruction": [
+    {
+      "additionalInstruction": [
+        {
+          "coding": [
+            {
+              "display": "This medicine may be taken with or without food."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "This medicine will work best if you take it at about the same time every day."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Do not take your last dose of the day within 4-6 hours of bedtime."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Store at room temperature away from heat, light, and moisture.  Do not keep in the bathroom."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "This medicine will make you urinate more. If you have difficulty passing urine, please tell your doctor."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Tell your doctor if you have severe or persistent sweating, diarrhea or vomiting.   These can increase your risk of a serious side effect."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "This medicine can make you sensitive to the sun. Use sunscreen or protective clothing when in sun."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "It is important that you keep taking each dose of this medicine on time even if you are feeling well."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "If you forget to take a dose on time, take it as soon as you remember. If it is almost time for the next dose, do not take the missed dose. Return to your normal schedule. Do not take 2 doses at one time."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Drug interactions can change how medicines work or increase risk for side effects. Tell your health care providers about all medicines taken. Include prescription and over-the-counter medicines, vitamins, and herbal medicines. Speak with your doctor or pharmacist before starting or stopping any medicine."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Tell your doctor if symptoms do not get better or if they get worse."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "This medicine may affect your blood sugar levels.  If you have diabetes, talk to your doctor before changing the dose of your diabetes medicine."
+            }
+          ]
+        },
+        {
+          "coding": [
+            {
+              "display": "Keep all appointments for medical exams and tests while on this medicine."
+            }
+          ]
+        }
+      ],
+      "timing": {
+        "repeat": {
+          "duration": 1,
+          "durationUnit": "d",
+          "frequency": 3
+        },
+        "code": {
+          "coding": [
+            {
+              "system": "https://terminology.hl7.org/5.4.0/CodeSystem-v3-GTSAbbreviation.html#v3-GTSAbbreviation-BID",
+              "code": "1",
+              "display": "Morning,Day,Evening"
+            }
+          ]
+        }
+      },
+      "route": {
+        "coding": [
+          {
+            "system": "http:/iemr.ehr/med-route",
+            "display": "Oral"
+          }
+        ]
+      }
+    }
+  ],
+  "dispenseRequest": {
+    "validityPeriod": {
+      "start": "2025-01-10",
+      "end": "2025-01-11"
+    }
+  }
+}

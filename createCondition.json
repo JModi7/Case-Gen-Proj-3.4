@@ -1,0 +1,74 @@
+{
+    "resourceType": "Condition",
+    "clinicalStatus": {
+        "coding": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-clinical",
+                "code": "Active",
+                "display": "Active"
+            }
+        ],
+        "text": "Active"
+    },
+    "verificationStatus": {
+        "coding": [
+            {
+                "system": "http://terminology.hl7.org/CodeSystem/condition-ver-status",
+                "code": "confirmed",
+                "display": "Confirmed"
+            }
+        ],
+        "text": "Confirmed"
+    },
+    "category": [
+        {
+            "coding": [
+                {
+                    "system": "http://terminology.hl7.org/CodeSystem/condition-category",
+                    "code": "problem-list-item",
+                    "display": "Problem List Item"
+                }
+            ],
+            "text": "Problem List Item"
+        }
+    ],
+    "code": {
+        "coding": [
+            {
+                "system": "http://e-imo.com/products/problem-it",
+                "code": "334677",
+                "display": "Type 2 diabetes mellitus"
+            },
+            {
+                "system": "http://e-imo.com/products/problem-it-default",
+                "code": "334677",
+                "display": "Type 2 diabetes mellitus"
+            },
+            {
+                "system": "http://fhir.com/Score",
+                "code": "1.0",
+                "display": "1.0"
+            },
+            {
+                "system": "http://hl7.org/fhir/sid/icd-9-cm",
+                "code": "250.00",
+                "display": "250.00"
+            },
+            {
+                "system": "http://hl7.org/fhir/sid/icd-10-cm",
+                "code": "E11.9",
+                "display": "E11.9"
+            },
+            {
+                "system": "http://snomed.info/sct",
+                "code": "44054006",
+                "display": "44054006"
+            }
+        ],
+        "text": "Type 2 Diabetes"
+    },
+    "subject": {
+        "reference": "Patient/202"
+    },
+    "recordedDate": "2025-01-10"
+}

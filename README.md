@@ -15,6 +15,25 @@ This tool bridges that gap by using **Large Language Models (LLMs)** to simulate
 
 ---
 
+## Group Members
+
+-   **Harsh Patel**
+-   **Jainil Modi** - A20586989
+-   **Saloni Patel**
+-   **Snehal Phadtare**
+-   **Swapnil Jadhav**
+
+### Acknowledgments
+
+We extend our gratitude to our mentors and collaborators for their invaluable guidance and support:
+
+-   **Frank Rad**
+-   **John Trzesniak**
+-   **Abhinav**
+-   **Nikolina**
+
+---
+
 ## Core Features
 
 -   **Transcript-to-Simulation:** Convert real Suki-generated transcripts into simulation-ready cases
@@ -27,12 +46,12 @@ This tool bridges that gap by using **Large Language Models (LLMs)** to simulate
 
 ## Tech Stack
 
--   LLMs (GPT-4o-mini)
--   FHIR (Fast Healthcare Interoperability Resources)
--   Streamlit / Flask (web app)
--   Python (backend logic)
--   PostgreSQL (storage)
--   OAuth2, HIPAA-compliant handling
+-   **LLMs:** GPT-4o-mini
+-   **FHIR:** Fast Healthcare Interoperability Resources
+-   **Web Frameworks:** Streamlit / Flask
+-   **Backend Logic:** Python
+-   **Database:** PostgreSQL
+-   **Authentication:** OAuth2, HIPAA-compliant handling
 
 ---
 
@@ -45,11 +64,24 @@ This tool bridges that gap by using **Large Language Models (LLMs)** to simulate
 
 ---
 
-## Folder Structure (Suggested)
+## File Structure
+
+```
+.
+├── README.md
+├── app/
+│   ├── frontend/
+│   │   ├── index.py
+│   └── backend/
+│       ├── main.py
+│       ├── authToken.py
+```
+
+---
 
 ## Risks & Mitigation
 
-| Risk                   | Mitigation                                 |
+| **Risk**               | **Mitigation**                             |
 | ---------------------- | ------------------------------------------ |
 | High AI API Costs      | Usage capping, prompt optimization         |
 | Inconsistent Dialogues | Clinical tuning and scripted reinforcement |

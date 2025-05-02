@@ -16,8 +16,10 @@ from fhirclient.models import (
     observation,
     medicationrequest,
     allergyintolerance,
+    dosage,
 )
 from fhirclient.models.fhirdate import FHIRDate
+from fhirclient.models.fhirdatetime import FHIRDateTime
 from fhirclient.models.codeableconcept import CodeableConcept
 from fhirclient.models.coding import Coding
 from fhirclient.models.quantity import Quantity
@@ -70,25 +72,30 @@ def call_openai_to_extract(text):
 
         Format your answer strictly in this JSON structure:
         {{
-        "patient_name": "",
-        "dob": "",
-        "gender": "",
-        "encounter_date": "",
-        "encounter_type": "",
-        "conditions": [],
-        "medications": [],
+        "patient_name": "John Smith",
+        "dob": "1970-01-18",
+        "gender": "male",
+        "encounter_date": "2025-04-28",
+        "encounter_type": "emergency",
+        "conditions": ["Chest Pain", "Hypertension", "Hyperlipidemia"],
+        "medications": ["Aspirin", "Nitroglycerin", "Morphine"],
         "vitals": {{
-            "systolic": '',
-            "diastolic": '',
-            "heart_rate": '',
-            "respiratory_rate": '',
-            "temperature": '',
-            "oxygen_saturation": ''
+            "systolic": 148,
+            "diastolic": 92,
+            "heart_rate": 102,
+            "respiratory_rate": 20,
+            "temperature": 98.4,
+            "oxygen_saturation": 96
         }},
         "allergies": [],
-        "procedures_performed": [],
-        "tests_ordered": [],
-        "care_plan": []
+        "procedures_performed": ["12-lead EKG", "IV access", "Cardiac monitoring"],
+        "tests_ordered": ["Troponin I", "CBC", "BMP", "Chest X-ray"],
+        "care_plan": [
+            "Consult cardiology",
+            "Repeat troponins in 3 and 6 hours",
+            "Continuous telemetry monitoring",
+            "Lifestyle modifications"
+        ]
         }}
 
         Here is the clinical note:
@@ -106,7 +113,7 @@ def call_openai_to_extract(text):
     # extracted_json = json.loads(response.choices[0].message.content.strip())
 
     return json.loads(
-        open("/home/Kira/RamDisk/project3_4/src/backend/temp.json").read()
+        open("/home/Kira/RamDisk/project3_4/src/backend/data.json").read()
     )
 
 
@@ -122,7 +129,7 @@ def create_condition_resource(condition_name, patient_id):
     clinical_status = CodeableConcept()
     clinical_coding = Coding()
     clinical_coding.system = "http://terminology.hl7.org/CodeSystem/condition-clinical"
-    clinical_coding.code = "active"
+    clinical_coding.code = "Active"
     clinical_coding.display = "Active"
     clinical_status.coding = [clinical_coding]
     cond_resource.clinicalStatus = clinical_status
@@ -162,7 +169,9 @@ def create_condition_resource(condition_name, patient_id):
     cond_resource.subject = subject
 
     # Set recorded date
-    cond_resource.recordedDate = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+    cond_resource.recordedDate = FHIRDateTime(
+        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
     return cond_resource.as_json()
 
@@ -200,12 +209,14 @@ def create_medication_request_resource(extracted, patient_id):
     med_resource.subject = subject
 
     # Set authored date
-    med_resource.authoredOn = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+    med_resource.authoredOn = FHIRDateTime(
+        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
     # Set dosage instruction
-    dosage = medicationrequest.MedicationRequestDosageInstruction()
-    dosage.text = "As clinically indicated."
-    med_resource.dosageInstruction = [dosage]
+    dosage_inst = dosage.Dosage()
+    dosage_inst.text = "As clinically indicated."
+    med_resource.dosageInstruction = [dosage_inst]
 
     return med_resource.as_json()
 
@@ -250,7 +261,9 @@ def create_observation_resource(vitals, patient_id):
     obs_resource.subject = subject
 
     # Set effective date time
-    obs_resource.effectiveDateTime = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+    obs_resource.effectiveDateTime = FHIRDateTime(
+        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
     # Set value quantity
     value_quantity = Quantity()
@@ -307,16 +320,18 @@ def create_allergy_intolerance_resource(extracted, patient_id):
     allergy_resource.patient = patient_ref
 
     # Set recorded date
-    allergy_resource.recordedDate = FHIRDate(datetime.now().strftime("%Y-%m-%d"))
+    allergy_resource.recordedDate = FHIRDateTime(
+        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    )
 
     # Set reactions or notes
     if allergies:
         reactions = []
         for allergy in allergies:
             reaction = allergyintolerance.AllergyIntoleranceReaction()
-            manifestation = CodeableConcept()
-            manifestation.text = allergy
-            reaction.manifestation = [manifestation]
+            manifestation_concept = CodeableConcept()
+            manifestation_concept.text = allergy
+            reaction.manifestation = [manifestation_concept]
             reactions.append(reaction)
         allergy_resource.reaction = reactions
     else:

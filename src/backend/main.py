@@ -266,11 +266,11 @@ def create_observation_resource(vitals, patient_id):
     )
 
     # Set value quantity
-    value_quantity = Quantity()
-    value_quantity.value = vitals["heart_rate"]
-    value_quantity.unit = "beats/minute"
-    value_quantity.system = "http://unitsofmeasure.org"
-    value_quantity.code = "/min"
+    value_quantity             = Quantity()
+    value_quantity.value       = vitals.get("heart_rate", 0)  # Default to 0 if not provided
+    value_quantity.unit        = "beats/minute"
+    value_quantity.system      = "http://unitsofmeasure.org"
+    value_quantity.code        = "/min"
     obs_resource.valueQuantity = value_quantity
 
     return obs_resource.as_json()

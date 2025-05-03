@@ -112,9 +112,8 @@ def call_openai_to_extract(text):
 
     # extracted_json = json.loads(response.choices[0].message.content.strip())
 
-    return json.loads(
-        open("/home/Kira/RamDisk/project3_4/src/backend/data.json").read()
-    )
+    return json.loads(open("./data.json").read())
+    # return extracted_json
 
 
 def create_condition_resource(condition_name, patient_id):
@@ -221,59 +220,115 @@ def create_medication_request_resource(extracted, patient_id):
     return med_resource.as_json()
 
 
-def create_observation_resource(vitals, patient_id):
-    """Create FHIR Observation resource using fhirclient model"""
-    # Create heart rate observation as an example
-    obs_resource = observation.Observation()
+def create_observation_resources(vitals, patient_id):
+    """Create multiple FHIR Observation resources using fhirclient model"""
+    # Define mapping for vital signs with their LOINC codes
+    vital_sign_mappings = {
+        "systolic": {
+            "code": "8480-6",
+            "display": "Systolic blood pressure",
+            "unit": "mm[Hg]",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "mm[Hg]",
+        },
+        "diastolic": {
+            "code": "8462-4",
+            "display": "Diastolic blood pressure",
+            "unit": "mm[Hg]",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "mm[Hg]",
+        },
+        "heart_rate": {
+            "code": "8867-4",
+            "display": "Heart rate",
+            "unit": "beats/minute",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "/min",
+        },
+        "respiratory_rate": {
+            "code": "9279-1",
+            "display": "Respiratory rate",
+            "unit": "breaths/minute",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "/min",
+        },
+        "temperature": {
+            "code": "8310-5",
+            "display": "Body temperature",
+            "unit": "F",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "[degF]",
+        },
+        "oxygen_saturation": {
+            "code": "2708-6",
+            "display": "Oxygen saturation",
+            "unit": "%",
+            "system": "http://unitsofmeasure.org",
+            "unitCode": "%",
+        },
+    }
 
-    # Set resource type and ID
-    obs_resource.resource_type = "Observation"
-    obs_resource.id = "heart-rate"
+    observation_resources = []
 
-    # Set status
-    obs_resource.status = "final"
+    # Create an observation resource for each vital sign
+    for vital_name, vital_value in vitals.items():
+        if vital_name in vital_sign_mappings and vital_value is not None:
+            mapping = vital_sign_mappings[vital_name]
 
-    # Set category
-    category = CodeableConcept()
-    category_coding = Coding()
-    category_coding.system = (
-        "http://terminology.hl7.org/CodeSystem/observation-category"
-    )
-    category_coding.code = "vital-signs"
-    category_coding.display = "Vital Signs"
-    category.coding = [category_coding]
-    category.text = "Vital Signs"
-    obs_resource.category = [category]
+            # Create a new Observation resource
+            obs_resource = observation.Observation()
 
-    # Set code
-    code = CodeableConcept()
-    code_coding = Coding()
-    code_coding.system = "http://loinc.org"
-    code_coding.code = "8867-4"
-    code_coding.display = "Heart rate"
-    code.coding = [code_coding]
-    code.text = "Heart rate"
-    obs_resource.code = code
+            # Set resource type and ID
+            obs_resource.resource_type = "Observation"
+            obs_resource.id = vital_name.replace("_", "-")
 
-    # Set subject reference
-    subject = FHIRReference()
-    subject.reference = f"Patient/{patient_id}"
-    obs_resource.subject = subject
+            # Set status
+            obs_resource.status = "final"
 
-    # Set effective date time
-    obs_resource.effectiveDateTime = FHIRDateTime(
-        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    )
+            # Set category
+            category = CodeableConcept()
+            category_coding = Coding()
+            category_coding.system = (
+                "http://terminology.hl7.org/CodeSystem/observation-category"
+            )
+            category_coding.code = "vital-signs"
+            category_coding.display = "Vital Signs"
+            category.coding = [category_coding]
+            category.text = "Vital Signs"
+            obs_resource.category = [category]
 
-    # Set value quantity
-    value_quantity             = Quantity()
-    value_quantity.value       = vitals.get("heart_rate", 0)  # Default to 0 if not provided
-    value_quantity.unit        = "beats/minute"
-    value_quantity.system      = "http://unitsofmeasure.org"
-    value_quantity.code        = "/min"
-    obs_resource.valueQuantity = value_quantity
+            # Set code
+            code = CodeableConcept()
+            code_coding = Coding()
+            code_coding.system = "http://loinc.org"
+            code_coding.code = mapping["code"]
+            code_coding.display = mapping["display"]
+            code.coding = [code_coding]
+            code.text = mapping["display"]
+            obs_resource.code = code
 
-    return obs_resource.as_json()
+            # Set subject reference
+            subject = FHIRReference()
+            subject.reference = f"Patient/{patient_id}"
+            obs_resource.subject = subject
+
+            # Set effective date time
+            obs_resource.effectiveDateTime = FHIRDateTime(
+                datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+            )
+
+            # Set value quantity
+            value_quantity = Quantity()
+            value_quantity.value = vital_value
+            value_quantity.unit = mapping["unit"]
+            value_quantity.system = mapping["system"]
+            value_quantity.code = mapping["unitCode"]
+            obs_resource.valueQuantity = value_quantity
+
+            # Add the observation resource to the list
+            observation_resources.append(obs_resource.as_json())
+
+    return observation_resources
 
 
 def create_allergy_intolerance_resource(extracted, patient_id):
@@ -370,7 +425,8 @@ def create_patient_json(user_data):
 
 def post_to_fhir(resource_json, resource_type):
     """POST generated JSON to FHIR server"""
-    url = f"{os.getenv('FHIR_SERVER_URL')}/{resource_type}"
+    # url = f"http://127.0.0.1:8080/fhir/{resource_type}/"
+    url = os.getenv("FHIR_SERVER_URL") + resource_type
     headers = {"Content-Type": "application/fhir+json;charset=UTF-8"}
     response = requests.post(url, headers=headers, json=resource_json)
     return response.status_code, response.text
@@ -437,11 +493,17 @@ def process_note():
     if med_status != 201:
         print(f"Failed to post medication request: {med_resp}")
 
-    # Create and post observation for vitals
-    observation_resource = create_observation_resource(extracted["vitals"], patient_id)
-    obs_status, obs_resp = post_to_fhir(observation_resource, "Observation")
-    if obs_status != 201:
-        print(f"Failed to post observation: {obs_resp}")
+    # Create and post multiple observations for vitals
+    observation_resources = create_observation_resources(
+        extracted["vitals"], patient_id
+    )
+    observation_responses = []
+
+    for obs_resource in observation_resources:
+        obs_status, obs_resp = post_to_fhir(obs_resource, "Observation")
+        observation_responses.append({"status": obs_status, "response": obs_resp})
+        if obs_status != 201:
+            print(f"Failed to post observation: {obs_resp}")
 
     # Create and post allergy intolerance
     allergy_resource = create_allergy_intolerance_resource(extracted, patient_id)
@@ -455,7 +517,7 @@ def process_note():
             "registration": {"status": reg_status, "response": reg_resp},
             "conditions": conditions_responses,
             "medication": {"status": med_status, "response": med_resp},
-            "observation": {"status": obs_status, "response": obs_resp},
+            "observations": observation_responses,
             "allergyIntolerance": {"status": allergy_status, "response": allergy_resp},
         }
     )

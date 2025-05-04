@@ -175,49 +175,64 @@ def create_condition_resource(condition_name, patient_id):
     return cond_resource.as_json()
 
 
-def create_medication_request_resource(extracted, patient_id):
-    """Create FHIR MedicationRequest resource using fhirclient model"""
-    med_resource = medicationrequest.MedicationRequest()
+def create_medication_request_resources(extracted, patient_id):
+    """Create multiple FHIR MedicationRequest resources using fhirclient model"""
+    medications = extracted.get("medications", [])
+    medication_resources = []
 
-    # Set resource type
-    med_resource.resource_type = "MedicationRequest"
+    for medication in medications:
+        med_resource = medicationrequest.MedicationRequest()
 
-    # Set status
-    med_resource.status = "active"
+        # Set resource type
+        med_resource.resource_type = "MedicationRequest"
 
-    # Set intent
-    med_resource.intent = "order"
+        # Set status
+        med_resource.status = "active"
 
-    # Set medication concept
-    med_concept = CodeableConcept()
-    med_concept.text = ", ".join(extracted["medications"])
+        # Set intent
+        med_resource.intent = "order"
 
-    med_codings = []
-    for med in extracted["medications"]:
+        # Set medication concept - now only for this specific medication
+        med_concept = CodeableConcept()
+        med_concept.text = medication
+
         med_coding = Coding()
         med_coding.system = "http://www.nlm.nih.gov/research/umls/rxnorm"
-        med_coding.display = med
-        med_codings.append(med_coding)
+        med_coding.display = medication
+        med_concept.coding = [med_coding]
 
-    med_concept.coding = med_codings
-    med_resource.medicationCodeableConcept = med_concept
+        med_resource.medicationCodeableConcept = med_concept
 
-    # Set subject reference
-    subject = FHIRReference()
-    subject.reference = f"Patient/{patient_id}"
-    med_resource.subject = subject
+        # Set subject reference
+        subject = FHIRReference()
+        subject.reference = f"Patient/{patient_id}"
+        med_resource.subject = subject
 
-    # Set authored date
-    med_resource.authoredOn = FHIRDateTime(
-        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    )
+        # Set authored date
+        med_resource.authoredOn = FHIRDateTime(
+            datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
 
-    # Set dosage instruction
-    dosage_inst = dosage.Dosage()
-    dosage_inst.text = "As clinically indicated."
-    med_resource.dosageInstruction = [dosage_inst]
+        # Extract dosage information if available in medication string
+        dosage_inst = dosage.Dosage()
 
-    return med_resource.as_json()
+        # Parse potential dosage information from medication string
+        # Example: "Aspirin 325mg" -> extract "325mg" as dosage
+        # This is a simple implementation - could be enhanced with regex pattern matching
+        dose_text = medication
+
+        # Try to set a more specific dosage instruction if possible
+        if " " in medication and any(char.isdigit() for char in medication):
+            dosage_inst.text = f"Take {medication} as prescribed."
+        else:
+            dosage_inst.text = "Take as clinically indicated."
+
+        med_resource.dosageInstruction = [dosage_inst]
+
+        # Add the medication resource to the list
+        medication_resources.append(med_resource.as_json())
+
+    return medication_resources
 
 
 def create_observation_resources(vitals, patient_id):
@@ -331,70 +346,123 @@ def create_observation_resources(vitals, patient_id):
     return observation_resources
 
 
-def create_allergy_intolerance_resource(extracted, patient_id):
-    """Create FHIR AllergyIntolerance resource using fhirclient model"""
+def create_allergy_intolerance_resources(extracted, patient_id):
+    """Create multiple FHIR AllergyIntolerance resources using fhirclient model"""
     allergies = extracted.get("allergies", [])
+    allergy_resources = []
 
-    allergy_resource = allergyintolerance.AllergyIntolerance()
+    # If no allergies are present, create a "No Known Allergies" record
+    if not allergies:
+        allergy_resource = allergyintolerance.AllergyIntolerance()
 
-    # Set resource type
-    allergy_resource.resource_type = "AllergyIntolerance"
+        # Set resource type
+        allergy_resource.resource_type = "AllergyIntolerance"
 
-    # Set clinical status
-    clinical_status = CodeableConcept()
-    clinical_coding = Coding()
-    clinical_coding.system = (
-        "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"
-    )
-    clinical_coding.code = "active" if allergies else "inactive"
-    clinical_status.coding = [clinical_coding]
-    allergy_resource.clinicalStatus = clinical_status
+        # Set clinical status
+        clinical_status = CodeableConcept()
+        clinical_coding = Coding()
+        clinical_coding.system = (
+            "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"
+        )
+        clinical_coding.code = "inactive"
+        clinical_status.coding = [clinical_coding]
+        allergy_resource.clinicalStatus = clinical_status
 
-    # Set verification status
-    verification_status = CodeableConcept()
-    verification_coding = Coding()
-    verification_coding.system = (
-        "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"
-    )
-    verification_coding.code = "confirmed" if allergies else "unconfirmed"
-    verification_status.coding = [verification_coding]
-    allergy_resource.verificationStatus = verification_status
+        # Set verification status
+        verification_status = CodeableConcept()
+        verification_coding = Coding()
+        verification_coding.system = (
+            "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"
+        )
+        verification_coding.code = "confirmed"
+        verification_status.coding = [verification_coding]
+        allergy_resource.verificationStatus = verification_status
 
-    # Set type
-    allergy_resource.type = "allergy"
+        # Set type
+        allergy_resource.type = "allergy"
 
-    # Set category
-    allergy_resource.category = ["medication"]
+        # Set category
+        allergy_resource.category = ["medication"]
 
-    # Set criticality
-    allergy_resource.criticality = "low"
+        # Set patient reference
+        patient_ref = FHIRReference()
+        patient_ref.reference = f"Patient/{patient_id}"
+        allergy_resource.patient = patient_ref
 
-    # Set patient reference
-    patient_ref = FHIRReference()
-    patient_ref.reference = f"Patient/{patient_id}"
-    allergy_resource.patient = patient_ref
+        # Set recorded date
+        allergy_resource.recordedDate = FHIRDateTime(
+            datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
 
-    # Set recorded date
-    allergy_resource.recordedDate = FHIRDateTime(
-        datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
-    )
-
-    # Set reactions or notes
-    if allergies:
-        reactions = []
-        for allergy in allergies:
-            reaction = allergyintolerance.AllergyIntoleranceReaction()
-            manifestation_concept = CodeableConcept()
-            manifestation_concept.text = allergy
-            reaction.manifestation = [manifestation_concept]
-            reactions.append(reaction)
-        allergy_resource.reaction = reactions
-    else:
+        # Set note for no known allergies
         note = Annotation()
         note.text = "No known allergies."
         allergy_resource.note = [note]
 
-    return allergy_resource.as_json()
+        allergy_resources.append(allergy_resource.as_json())
+
+    # Create individual allergy resources for each allergy
+    else:
+        for allergy in allergies:
+            allergy_resource = allergyintolerance.AllergyIntolerance()
+
+            # Set resource type
+            allergy_resource.resource_type = "AllergyIntolerance"
+
+            # Set clinical status
+            clinical_status = CodeableConcept()
+            clinical_coding = Coding()
+            clinical_coding.system = (
+                "http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical"
+            )
+            clinical_coding.code = "active"
+            clinical_status.coding = [clinical_coding]
+            allergy_resource.clinicalStatus = clinical_status
+
+            # Set verification status
+            verification_status = CodeableConcept()
+            verification_coding = Coding()
+            verification_coding.system = (
+                "http://terminology.hl7.org/CodeSystem/allergyintolerance-verification"
+            )
+            verification_coding.code = "confirmed"
+            verification_status.coding = [verification_coding]
+            allergy_resource.verificationStatus = verification_status
+
+            # Set type
+            allergy_resource.type = "allergy"
+
+            # Set category
+            allergy_resource.category = ["medication"]
+
+            # Set criticality - default to low unless specified
+            allergy_resource.criticality = "low"
+
+            # Set patient reference
+            patient_ref = FHIRReference()
+            patient_ref.reference = f"Patient/{patient_id}"
+            allergy_resource.patient = patient_ref
+
+            # Set recorded date
+            allergy_resource.recordedDate = FHIRDateTime(
+                datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ")
+            )
+
+            # Create a reaction for this specific allergy
+            reaction = allergyintolerance.AllergyIntoleranceReaction()
+            manifestation_concept = CodeableConcept()
+            manifestation_concept.text = allergy
+            reaction.manifestation = [manifestation_concept]
+            allergy_resource.reaction = [reaction]
+
+            # Create FHIR code for the allergy
+            code = CodeableConcept()
+            code.text = allergy
+            allergy_resource.code = code
+
+            allergy_resources.append(allergy_resource.as_json())
+
+    return allergy_resources
 
 
 def create_patient_json(user_data):
@@ -488,10 +556,14 @@ def process_note():
             print(f"Failed to post condition: {cond_resp}")
 
     # Create and post medication request
-    medication_resource = create_medication_request_resource(extracted, patient_id)
-    med_status, med_resp = post_to_fhir(medication_resource, "MedicationRequest")
-    if med_status != 201:
-        print(f"Failed to post medication request: {med_resp}")
+    medication_resources = create_medication_request_resources(extracted, patient_id)
+    medication_responses = []
+
+    for med_resource in medication_resources:
+        med_status, med_resp = post_to_fhir(med_resource, "MedicationRequest")
+        medication_responses.append({"status": med_status, "response": med_resp})
+        if med_status != 201:
+            print(f"Failed to post medication request: {med_resp}")
 
     # Create and post multiple observations for vitals
     observation_resources = create_observation_resources(
@@ -506,19 +578,25 @@ def process_note():
             print(f"Failed to post observation: {obs_resp}")
 
     # Create and post allergy intolerance
-    allergy_resource = create_allergy_intolerance_resource(extracted, patient_id)
-    allergy_status, allergy_resp = post_to_fhir(allergy_resource, "AllergyIntolerance")
-    if allergy_status != 201:
-        print(f"Failed to post allergy intolerance: {allergy_resp}")
+    allergy_resources = create_allergy_intolerance_resources(extracted, patient_id)
+    allergy_responses = []
+
+    for allergy_resource in allergy_resources:
+        allergy_status, allergy_resp = post_to_fhir(
+            allergy_resource, "AllergyIntolerance"
+        )
+        allergy_responses.append({"status": allergy_status, "response": allergy_resp})
+        if allergy_status != 201:
+            print(f"Failed to post allergy intolerance: {allergy_resp}")
 
     # Return response with all statuses
     return jsonify(
         {
             "registration": {"status": reg_status, "response": reg_resp},
             "conditions": conditions_responses,
-            "medication": {"status": med_status, "response": med_resp},
+            "medications": medication_responses,
             "observations": observation_responses,
-            "allergyIntolerance": {"status": allergy_status, "response": allergy_resp},
+            "allergyIntolerances": allergy_responses,
         }
     )
 

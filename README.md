@@ -19,7 +19,7 @@ This tool bridges that gap by using **Large Language Models (LLMs)** to simulate
 
 -   **Harsh Patel**
 -   **Jainil Modi** - A20586989
--   **Saloni Patel**
+-   **Saloni Patel** - A20558369
 -   **Snehal Phadtare**
 -   **Swapnil Jadhav**
 

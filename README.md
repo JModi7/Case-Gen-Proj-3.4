@@ -17,11 +17,11 @@ This tool bridges that gap by using **Large Language Models (LLMs)** to simulate
 
 ## Group Members
 
--   **Harsh Patel**
+-   **Harsh Patel** - A20593019
 -   **Jainil Modi** - A20586989
 -   **Saloni Patel** - A20558369
--   **Snehal Phadtare**
--   **Swapnil Jadhav**
+-   **Snehal Phadtare** - A20545641
+-   **Swapnil Jadhav** - A20555959
 
 ### Acknowledgments
 
@@ -61,21 +61,6 @@ We extend our gratitude to our mentors and collaborators for their invaluable gu
 -   Makary & Daniel. _BMJ_, 2016: Medical Error as a Leading Cause
 -   Cook et al. _JAMA_, 2011: Simulation improves diagnostic accuracy
 -   Ziv et al. _Medical Education_, 2003: Ethical imperative for simulation
-
----
-
-## File Structure
-
-```
-.
-├── README.md
-├── app/
-│   ├── frontend/
-│   │   ├── index.py
-│   └── backend/
-│       ├── main.py
-│       ├── authToken.py
-```
 
 ---
 

@@ -22,7 +22,11 @@
         "temperature": 98.4,
         "oxygen_saturation": 96
     },
-    "allergies": [],
+    "allergies": [
+        "Penicillin",
+        "Peanuts",
+        "Latex"
+    ],
     "procedures_performed": [
         "12-lead EKG",
         "Cardiac monitor",

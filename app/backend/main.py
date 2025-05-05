@@ -102,18 +102,15 @@ def call_openai_to_extract(text):
         {text}
         """
 
-    # client = openai.OpenAI(
-    #     api_key=os.getenv("OPENAI_API_KEY"),
-    # )  # New: create client instance
+    client = openai.OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY"),
+    )  # New: create client instance
 
-    # response = client.chat.completions.create(
-    #     model="gpt-4", messages=[{"role": "user", "content": prompt}], temperature=0
-    # )
+    response = client.chat.completions.create(
+        model="gpt-4", messages=[{"role": "user", "content": prompt}], temperature=0
+    )
 
-    # extracted_json = json.loads(response.choices[0].message.content.strip())
-
-    return json.loads(open("./data.json").read())
-    # return extracted_json
+    extracted_json = json.loads(response.choices[0].message.content.strip())
 
 
 def create_condition_resource(condition_name, patient_id):
